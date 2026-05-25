@@ -3,10 +3,11 @@ import logo from '../assets/logo.png';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, Users, BookOpen, DollarSign, Wallet,
-  Settings, LogOut, Menu, X, ChevronRight, TrendingUp, Megaphone, Bell, Mail,
+  Settings, LogOut, Menu, X, ChevronRight, TrendingUp, Megaphone, Bell, Mail, MessageCircle,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { adminApi } from '../services/api';
+import { adminApi, getToken } from '../services/api';
+import { adminSocket } from '../lib/adminSocket';
 
 const NAV_ITEMS = [
   { to: '/', icon: LayoutDashboard, label: 'Overview', end: true },
@@ -14,6 +15,7 @@ const NAV_ITEMS = [
   { to: '/courses', icon: BookOpen, label: 'Courses', end: false },
   { to: '/commissions', icon: DollarSign, label: 'Commissions', end: false },
   { to: '/withdrawals', icon: Wallet, label: 'Withdrawals', end: false, badgeKey: 'withdrawals' },
+  { to: '/support', icon: MessageCircle, label: 'Support', end: false, badgeKey: 'support' },
   { to: '/analytics', icon: TrendingUp, label: 'Analytics', end: false },
   { to: '/announcements', icon: Megaphone, label: 'Announcements', end: false },
   { to: '/email-blast', icon: Mail, label: 'Email Blast', end: false },
@@ -28,6 +30,7 @@ export default function AdminLayout() {
   const [showNotif, setShowNotif] = useState(false);
   const [notifLoading, setNotifLoading] = useState(false);
   const [pendingWithdrawals, setPendingWithdrawals] = useState(0);
+  const [chatUnread, setChatUnread] = useState(0);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -47,10 +50,32 @@ export default function AdminLayout() {
     }
   };
 
+  const fetchChatUnread = async () => {
+    const res = await adminApi.adminChat.unreadCount();
+    if (res.success && (res as any).data?.count !== undefined) {
+      setChatUnread((res as any).data.count);
+    }
+  };
+
   useEffect(() => {
-    if (admin) {
-      fetchNotifications();
-      fetchPendingCount();
+    if (!admin) return;
+
+    fetchNotifications();
+    fetchPendingCount();
+    fetchChatUnread();
+
+    const token = getToken();
+    if (token) {
+      const socket = adminSocket.connect(token);
+      socket.on('chat:message', (data: { message: { senderType: string } }) => {
+        if (data.message.senderType === 'user') {
+          // Refetch from server so we get the real ground-truth count
+          fetchChatUnread();
+        }
+      });
+      return () => {
+        socket.off('chat:message');
+      };
     }
   }, [admin]);
 
@@ -61,6 +86,7 @@ export default function AdminLayout() {
   };
 
   const handleLogout = () => {
+    adminSocket.disconnect();
     logout();
     navigate('/login');
   };
@@ -89,7 +115,7 @@ export default function AdminLayout() {
 
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
-            const badge = item.badgeKey === 'withdrawals' ? pendingWithdrawals : 0;
+            const badge = item.badgeKey === 'withdrawals' ? pendingWithdrawals : item.badgeKey === 'support' ? chatUnread : 0;
             return (
               <NavLink
                 key={item.to}

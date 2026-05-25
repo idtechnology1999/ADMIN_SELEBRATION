@@ -13,6 +13,7 @@ import Analytics from './pages/Analytics';
 import Announcements from './pages/Announcements';
 import EmailBlast from './pages/EmailBlast';
 import Settings from './pages/Settings';
+import Support from './pages/Support';
 
 function LoadingScreen() {
   return (
@@ -53,6 +54,7 @@ function AppRoutes() {
         <Route path="announcements" element={<Announcements />} />
         <Route path="email-blast" element={<EmailBlast />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="support" element={<Support />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

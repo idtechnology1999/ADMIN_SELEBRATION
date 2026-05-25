@@ -189,4 +189,15 @@ export const adminApi = {
     get: () =>
       request('/analytics'),
   },
+
+  adminChat: {
+    conversations: () =>
+      request('/admin-chat/conversations'),
+    messages: (userId: string) =>
+      request(`/admin-chat/messages/${userId}`),
+    send: (userId: string, message: string) =>
+      request(`/admin-chat/send/${userId}`, { method: 'POST', body: JSON.stringify({ message }) }),
+    unreadCount: () =>
+      request('/admin-chat/unread-count'),
+  },
 };
