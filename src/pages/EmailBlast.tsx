@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Send, Users, ChevronDown } from 'lucide-react';
+import { Mail, Send, Users } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { adminApi } from '../services/api';
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit2, Video, Save, X, Loader2, BookOpen, Play, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Edit2, Video, Save, X, Loader2, BookOpen, Play } from 'lucide-react';
 import { adminApi, fixUrl } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import FileUpload from '../components/FileUpload';
