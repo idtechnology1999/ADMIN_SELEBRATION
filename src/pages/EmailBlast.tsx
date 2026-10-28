@@ -10,8 +10,9 @@ const TARGETS = [
   { value: 'expired',   label: 'Expired',              desc: 'Users whose trial or subscription has expired' },
   { value: 'cancelled', label: 'Cancelled',            desc: 'Users who cancelled their subscription' },
   { value: 'stage-1',   label: 'Fish (Stage 1)',       desc: 'Users at stage 1 — Fish level' },
-  { value: 'stage-2',   label: 'Shark (Stage 2)',      desc: 'Users at stage 2 — Shark level' },
-  { value: 'stage-3',   label: 'Whale (Stage 3)',      desc: 'Users at stage 3 — Whale level' },
+  { value: 'stage-2',   label: 'Dolphin (Stage 2)',    desc: 'Users at stage 2 — Dolphin level' },
+  { value: 'stage-3',   label: 'Shark (Stage 3)',      desc: 'Users at stage 3 — Shark level' },
+  { value: 'stage-4',   label: 'Whale (Stage 4)',      desc: 'Users at stage 4 — Whale level' },
 ];
 
 export default function EmailBlast() {
