@@ -70,6 +70,11 @@ export default function Users() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  // "Activate" form: which stage and for how many months
+  const [activateFor, setActivateFor] = useState<User | null>(null);
+  const [activateStage, setActivateStage] = useState<'fish' | 'dolphin' | 'shark' | 'whale'>('fish');
+  const [activateMonths, setActivateMonths] = useState(1);
+  const [activating, setActivating] = useState(false);
   const [treeUser, setTreeUser] = useState<User | null>(null);
   const [page, setPage] = useState(1);
 
@@ -136,17 +141,38 @@ export default function Users() {
     }
   };
 
-  const handleActivate = async (id: string) => {
+  const STAGE_OPTIONS = [
+    { key: 'fish', label: '🐟 Fish (Stage 1)' },
+    { key: 'dolphin', label: '🐬 Dolphin (Stage 2)' },
+    { key: 'shark', label: '🦈 Shark (Stage 3)' },
+    { key: 'whale', label: '🐋 Whale (Stage 4)' },
+  ] as const;
+
+  const handleActivate = (id: string) => {
+    const user = users.find(u => u._id === id) || null;
+    setActivateStage(STAGE_OPTIONS[Math.min(Math.max((user?.stage ?? 1) - 1, 0), 3)].key);
+    setActivateMonths(1);
+    setActivateFor(user);
+  };
+
+  const confirmActivate = async () => {
+    if (!activateFor) return;
+    setActivating(true);
     try {
-      const res = await adminApi.users.activate(id);
-      if (res.success) {
-        setUsers(users.map(u => u._id === id ? { ...u, subscription: 'active' } : u));
-        toast.success('Subscription activated');
+      const res = await adminApi.users.activate(activateFor._id, { stage: activateStage, months: activateMonths });
+      if (res.success && res.data) {
+        const d = res.data;
+        setUsers(users.map(u => u._id === activateFor._id ? { ...u, subscription: 'active', stage: d.stage } : u));
+        setActivateFor(null);
+        setSelectedUser(null);
+        toast.success('Plan activated', `Active until ${new Date(d.paidUntil).toLocaleDateString()}.`);
       } else {
         toast.error('Action failed', res.message || 'Please try again.');
       }
     } catch (err: any) {
       toast.error('Action failed', err.message || 'Please try again.');
+    } finally {
+      setActivating(false);
     }
   };
 
@@ -280,6 +306,36 @@ export default function Users() {
               ))}
               <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronRight size={16} /></button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {activateFor && (
+        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="font-bold text-gray-900">Activate plan</h3>
+                <p className="text-sm text-gray-500">{activateFor.name || activateFor.email}</p>
+              </div>
+              <button onClick={() => setActivateFor(null)} className="text-gray-400 hover:text-gray-600" aria-label="Close"><X size={18} /></button>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Stage</label>
+              <select value={activateStage} onChange={e => setActivateStage(e.target.value as typeof activateStage)} className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm">
+                {STAGE_OPTIONS.map(o => <option key={o.key} value={o.key}>{o.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Months</label>
+              <input type="number" min={1} max={12} value={activateMonths} onChange={e => setActivateMonths(Math.min(12, Math.max(1, parseInt(e.target.value) || 1)))} className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm" />
+            </div>
+            <p className="text-xs text-gray-500">
+              Unlocks this stage and every stage below it. Use this for payments made outside the website (e.g. bank transfer) — no commissions are paid.
+            </p>
+            <button onClick={confirmActivate} disabled={activating} className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+              {activating && <Loader2 size={15} className="animate-spin" />} Activate
+            </button>
           </div>
         </div>
       )}

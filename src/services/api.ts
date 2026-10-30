@@ -67,8 +67,9 @@ export const adminApi = {
       request(`/users/${id}/ban`, { method: 'PUT' }),
     unban: (id: string) =>
       request(`/users/${id}/unban`, { method: 'PUT' }),
-    activate: (id: string) =>
-      request(`/users/${id}/activate`, { method: 'PUT' }),
+    // Give a stage for a number of months without a Paystack payment (e.g. paid by transfer).
+    activate: (id: string, body: { stage: 'fish' | 'dolphin' | 'shark' | 'whale'; months: number }) =>
+      request<{ stage: number; subscription: string; paidUntil: string }>(`/users/${id}/activate`, { method: 'PUT', body: JSON.stringify(body) }),
     cancel: (id: string) =>
       request(`/users/${id}/cancel`, { method: 'PUT' }),
     delete: (id: string) =>
