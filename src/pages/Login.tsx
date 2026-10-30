@@ -40,7 +40,7 @@ export default function Login() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
-            <img src={logo} alt="Selebration" className="h-14 w-auto object-contain" />
+            <img src={logo} alt="Selliberation" className="h-14 w-auto object-contain" />
           </div>
           <p className="text-white/50 text-sm">Admin Dashboard — Authorized Access Only</p>
         </div>

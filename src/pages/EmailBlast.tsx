@@ -89,7 +89,7 @@ export default function EmailBlast() {
             type="text"
             value={subject}
             onChange={e => setSubject(e.target.value)}
-            placeholder="e.g. Important update from Selebration"
+            placeholder="e.g. Important update from Selliberation"
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
           />
         </div>
@@ -103,7 +103,7 @@ export default function EmailBlast() {
             value={body}
             onChange={e => setBody(e.target.value)}
             rows={10}
-            placeholder={`Hi {{name}},\n\nYour message here...\n\nRegards,\nThe Selebration Team`}
+            placeholder={`Hi {{name}},\n\nYour message here...\n\nRegards,\nThe Selliberation Team`}
             className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-y font-mono"
           />
         </div>

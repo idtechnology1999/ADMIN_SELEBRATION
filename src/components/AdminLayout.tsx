@@ -105,7 +105,7 @@ export default function AdminLayout() {
       >
         <div className="px-5 py-5 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="flex items-center gap-2.5">
-            <img src={logo} alt="Selebration" className="h-8 w-auto object-contain" />
+            <img src={logo} alt="Selliberation" className="h-8 w-auto object-contain" />
             <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded" style={{ background: 'rgba(245,130,10,0.2)', color: '#F5820A' }}>ADMIN</span>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/40 hover:text-white">

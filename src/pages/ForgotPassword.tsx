@@ -140,7 +140,7 @@ export default function ForgotPassword() {
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <img src={logo} alt="Selebration" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
+            <img src={logo} alt="Selliberation" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
           </div>
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Admin Password Recovery</p>
         </div>
