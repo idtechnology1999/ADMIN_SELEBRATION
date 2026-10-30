@@ -133,6 +133,8 @@ export interface PlatformSettings {
     level5: number;
     level6: number;
   };
+  // Monthly price in Naira for each stage (used for payments and shown on the website)
+  prices: { fish: number; dolphin: number; shark: number; whale: number };
   general: {
     trialDays: number;
     minWithdrawal: number;

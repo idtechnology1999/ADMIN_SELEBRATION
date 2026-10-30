@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, CreditCard, DollarSign, Eye, EyeOff, Bell, Globe, Shield, Loader2, UserPlus, Mail, Lock, User } from 'lucide-react';
+import { Save, CreditCard, DollarSign, Eye, EyeOff, Bell, Globe, Shield, Loader2, UserPlus, Mail, Lock, User, Tag } from 'lucide-react';
 import type { PlatformSettings } from '../types';
 import { adminApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
@@ -9,6 +9,7 @@ const defaultSettings: PlatformSettings = {
   paystack: { publicKey: '', secretKey: '', planId: '' },
   bank: { bankName: '', accountNumber: '', accountName: '' },
   commissions: { level1: 65, level2: 15, level3: 5, level4: 3, level5: 2, level6: 1 },
+  prices: { fish: 5000, dolphin: 15000, shark: 50000, whale: 150000 },
   general: { trialDays: 7, minWithdrawal: 10000, subscriptionPrice: 5000, platformName: '', supportEmail: '' },
 };
 
@@ -31,6 +32,12 @@ function serverToAdmin(d: Record<string, any>): PlatformSettings {
       level4: d.commissionLevel4 ?? 3,
       level5: d.commissionLevel5 ?? 2,
       level6: d.commissionLevel6 ?? 1,
+    },
+    prices: {
+      fish: d.stagePrices?.fish ?? 5000,
+      dolphin: d.stagePrices?.dolphin ?? 15000,
+      shark: d.stagePrices?.shark ?? 50000,
+      whale: d.stagePrices?.whale ?? 150000,
     },
     general: {
       trialDays: d.trialDays ?? 7,
@@ -57,6 +64,7 @@ function adminToServer(s: PlatformSettings) {
     commissionLevel5: s.commissions.level5,
     commissionLevel6: s.commissions.level6,
     subscriptionPrice: s.general.subscriptionPrice,
+    stagePrices: s.prices,
     trialDays: s.general.trialDays,
     minWithdrawal: s.general.minWithdrawal,
     platformName: s.general.platformName,
@@ -66,6 +74,7 @@ function adminToServer(s: PlatformSettings) {
 
 const tabs = [
   { id: 'general', label: 'General', icon: Globe },
+  { id: 'prices', label: 'Stage Prices', icon: Tag },
   { id: 'paystack', label: 'Paystack', icon: CreditCard },
   { id: 'bank', label: 'Bank Account', icon: Shield },
   { id: 'commissions', label: 'Commissions', icon: DollarSign },
@@ -79,6 +88,7 @@ export default function Settings() {
   const isSuperAdmin = admin?.role === 'superadmin';
   const [settings, setSettings] = useState<PlatformSettings>(defaultSettings);
   const [activeTab, setActiveTab] = useState('general');
+  const [previewStage, setPreviewStage] = useState<'fish' | 'dolphin' | 'shark' | 'whale'>('fish');
   const [showKeys, setShowKeys] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -225,13 +235,41 @@ export default function Settings() {
                   <input type="number" className={inputClass} value={settings.general.trialDays} onChange={e => update('general', 'trialDays', parseInt(e.target.value))} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Subscription Price (₦/month)</label>
-                  <input type="number" className={inputClass} value={settings.general.subscriptionPrice} onChange={e => update('general', 'subscriptionPrice', parseInt(e.target.value))} />
-                </div>
-                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Minimum Withdrawal (₦)</label>
                   <input type="number" className={inputClass} value={settings.general.minWithdrawal} onChange={e => update('general', 'minWithdrawal', parseInt(e.target.value))} />
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'prices' && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-5">
+              <div>
+                <h2 className="text-base font-bold">Stage Prices</h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  Monthly price for each stage. Changes apply to new payments and renewals straight away, and show on the website.
+                  People on automatic renewal are charged the new price from their next renewal.
+                </p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                {[
+                  { key: 'fish', label: '🐟 Fish (Stage 1)' },
+                  { key: 'dolphin', label: '🐬 Dolphin (Stage 2)' },
+                  { key: 'shark', label: '🦈 Shark (Stage 3)' },
+                  { key: 'whale', label: '🐋 Whale (Stage 4)' },
+                ].map(item => (
+                  <div key={item.key}>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">{item.label} — ₦ per month</label>
+                    <input
+                      type="number"
+                      min={100}
+                      step={100}
+                      className={inputClass}
+                      value={settings.prices[item.key as keyof typeof settings.prices]}
+                      onChange={e => update('prices', item.key, parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -292,6 +330,16 @@ export default function Settings() {
                 <h2 className="text-base font-bold">Commission Rates</h2>
                 <p className="text-sm text-gray-500 mt-0.5">Configure percentages for each referral level.</p>
               </div>
+              <label className="flex items-center gap-2 text-sm text-gray-600">
+                Show amounts for a
+                <select value={previewStage} onChange={e => setPreviewStage(e.target.value as typeof previewStage)} className="border border-gray-300 rounded-lg px-2 py-1 text-sm">
+                  <option value="fish">Fish</option>
+                  <option value="dolphin">Dolphin</option>
+                  <option value="shark">Shark</option>
+                  <option value="whale">Whale</option>
+                </select>
+                payment
+              </label>
               <div className="grid md:grid-cols-2 gap-4">
                 {[
                   { key: 'level1', label: 'Level 1 (Direct Referral)' },
@@ -311,8 +359,8 @@ export default function Settings() {
                         className="w-16 border border-gray-300 rounded-lg px-2 py-1.5 text-center text-sm"
                       />
                       <span className="text-gray-500 text-sm">%</span>
-                      <span className="text-xs text-gray-400 w-16">
-                        ₦{(settings.general.subscriptionPrice * (settings.commissions[item.key as keyof typeof settings.commissions] / 100)).toLocaleString()}
+                      <span className="text-xs text-gray-400 w-20">
+                        ₦{Math.floor(settings.prices[previewStage] * (settings.commissions[item.key as keyof typeof settings.commissions] / 100)).toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -322,7 +370,7 @@ export default function Settings() {
                 <span className="font-semibold" style={{ color: '#F5820A' }}>Total Commission: </span>
                 <span style={{ color: '#c26200' }}>
                   {Object.values(settings.commissions).reduce((a, b) => a + b, 0)}% —{' '}
-                  ₦{(settings.general.subscriptionPrice * Object.values(settings.commissions).reduce((a, b) => a + b, 0) / 100).toLocaleString()} per subscription
+                  ₦{Math.floor(settings.prices[previewStage] * Object.values(settings.commissions).reduce((a, b) => a + b, 0) / 100).toLocaleString()} per {previewStage} payment
                 </span>
               </div>
             </div>
