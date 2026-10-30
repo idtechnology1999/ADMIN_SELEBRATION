@@ -1,0 +1,32 @@
+name: Build admin panel image
+on:
+  push:
+    branches: [production]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Runs only in the kingselo copy of this repo, which may publish to ghcr.io/kingselo.
+    if: github.repository_owner == 'kingselo'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: |
+            VITE_API_URL=https://api.selliberation.co
+          tags: |
+            ghcr.io/kingselo/selebration-admin:latest
+            ghcr.io/kingselo/selebration-admin:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
